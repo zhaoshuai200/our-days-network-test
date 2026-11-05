@@ -37,22 +37,24 @@ function balancedPhotoSize(ratio,width,height){
  const marker=document.createElement('div');marker.className='cinema-marker';marker.setAttribute('aria-hidden','true');
  let playlist=[],index=0,playing=false,elapsed=0,orbitBase=0,orbitProgress=0,frame=0,lastTime=0,clockTimer=0,tiles=[],size={width:0,height:0};
  const wrap=n=>(n%playlist.length+playlist.length)%playlist.length;
- let photoRequest=0,oldPhoto=null;
+ let photoRequest=0,oldPhoto=null,privateCinemaController;
+ dialog.addEventListener('close',()=>privateCinemaController?.abort());
  function clearPhotoTransition(){
   focusImage.getAnimations().forEach(a=>a.cancel());
   oldPhoto?.remove();oldPhoto=null;
  }
  async function presentPhoto(item,animate){
+  privateCinemaController?.abort();privateCinemaController=new AbortController();
   const request=++photoRequest,loader=new Image();
   focus.setAttribute('aria-busy','true');focus.disabled=true;
   try{
-   loader.src=await window.resolvePrivatePhoto(item.src);await loader.decode();
+   loader.src=await window.resolvePrivatePhoto(item.src,{priority:1,signal:privateCinemaController.signal});await loader.decode();
    if(request!==photoRequest||!dialog.open)return;
    clearPhotoTransition();
    if(animate&&!reduced.matches&&focusImage.naturalWidth){
     oldPhoto=focusImage.cloneNode();oldPhoto.removeAttribute('id');oldPhoto.alt='';oldPhoto.setAttribute('aria-hidden','true');oldPhoto.className='cinema-outgoing';focus.prepend(oldPhoto);
    }
-   focusImage.src=loader.src;sizePhoto();
+   focusImage.src=loader.src;sizePhoto();elapsed=0;
    if(oldPhoto){
     const outgoing=oldPhoto;
     outgoing.animate([{opacity:1},{opacity:0}],{duration:480,easing:'ease-in-out',fill:'forwards'}).finished.then(()=>{outgoing.remove();if(oldPhoto===outgoing)oldPhoto=null;}).catch(()=>{});
@@ -140,7 +142,7 @@ function balancedPhotoSize(ratio,width,height){
    orbitBase=next.base;orbitProgress=next.progress;
    if(next.changed)buildRing();else layout();
   }
-  if(elapsed>=duration){
+  if(elapsed>=duration&&focus.getAttribute('aria-busy')!=='true'){
    elapsed%=duration;
    // Sample the photograph nearest the fixed rear-centre marker. Updating the
    // large image never resets, advances or pauses the independently moving ring.

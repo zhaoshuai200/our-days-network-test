@@ -1,16 +1,16 @@
 (()=>{
  const $=id=>document.getElementById(id),urls=new Set(),aad=new TextEncoder().encode('our-days-private-v1');
  let generation=0,controller,retryKey=null;
- const revision='loading3';
+ const revision='view4';
  function bytes(text){return Uint8Array.from(atob(text.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}
  function status(text,current){if(current===generation)$('status').textContent=text;}
  // Bound both idle connections and total transfer time. Locking cancels retries too.
- async function download(url,signal,report=()=>{}){
-  for(let attempt=0;attempt<3;attempt++){
+ async function download(url,signal,report=()=>{},limits={}){
+  for(let attempt=0;attempt<(limits.attempts||3);attempt++){
    signal.throwIfAborted();const request=new AbortController();let idle,total,timedOut=false;
    const abort=()=>request.abort(signal.reason),expire=()=>{timedOut=true;request.abort();};
-   const touch=()=>{clearTimeout(idle);idle=setTimeout(expire,15000);};
-   signal.addEventListener('abort',abort,{once:true});total=setTimeout(expire,60000);touch();
+   const touch=()=>{clearTimeout(idle);idle=setTimeout(expire,limits.idle||15000);};
+   signal.addEventListener('abort',abort,{once:true});total=setTimeout(expire,limits.total||60000);touch();
    try{
     report({attempt,loaded:0,total:0});
     const response=await fetch(url,{signal:request.signal});if(!response.ok)throw new Error('NETWORK');touch();
@@ -21,13 +21,13 @@
     const data=new Uint8Array(loaded);let offset=0;for(const part of parts){data.set(part,offset);offset+=part.length;}return data;
    }catch(error){
     if(signal.aborted)throw signal.reason;
-    if(attempt===2)throw new Error(timedOut?'TIMEOUT':'NETWORK');
+    if(attempt===(limits.attempts||3)-1)throw new Error(timedOut?'TIMEOUT':'NETWORK');
    }finally{clearTimeout(idle);clearTimeout(total);signal.removeEventListener('abort',abort);request.abort();}
   }
  }
- async function decryptBytes(file,key,signal,report){
-  const data=await download('vault/'+file+(file==='manifest.bin'?'?v='+revision:''),signal,report);
-  signal.throwIfAborted();return crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));
+ async function decryptBytes(file,key,signal,report,limits){
+  const data=await download('vault/'+file+(file==='manifest.bin'?'?v='+revision:''),signal,report,limits);
+  signal.throwIfAborted();report?.({phase:'decrypt'});return crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));
  }
  async function decrypt(file,key,signal,report){return JSON.parse(new TextDecoder().decode(await decryptBytes(file,key,signal,report)));}
  function clearMedia(){delete window.privatePhoto;for(const url of urls)URL.revokeObjectURL(url);urls.clear();}
@@ -49,7 +49,7 @@
    const media={};$('progress').hidden=false;$('progress').max=manifest.chunks.length;
    for(let i=0;i<manifest.chunks.length;i++){
     const chunk=await decrypt(manifest.chunks[i],key,signal,p=>{
-     const amount=p.total?`${Math.round(p.loaded/1024)} / ${Math.round(p.total/1024)} KB`:`${Math.round(p.loaded/1024)} KB`;
+     if(p.phase==='decrypt')return;const amount=p.total?`${Math.round(p.loaded/1024)} / ${Math.round(p.total/1024)} KB`:`${Math.round(p.loaded/1024)} KB`;
      status(`正在下载预览 ${i+1} / ${manifest.chunks.length} · ${amount}${p.attempt?' · 重试 '+p.attempt+' / 2':''}`,current);
      if(current===generation)$('progress').value=i+(p.total?p.loaded/p.total:0);
     });if(current!==generation)return;
@@ -57,12 +57,15 @@
     for(const [route,item]of Object.entries(chunk)){const url=URL.createObjectURL(new Blob([bytes(item.data)],{type:item.mime}));urls.add(url);media[route]=url;}
     $('progress').value=i+1;
    }
-   const pending=new Map(),clearImages={};window.privatePhoto=route=>{
-    if(current!==generation)return Promise.reject(new Error('Locked'));
-    if(clearImages[route])return Promise.resolve(clearImages[route]);if(pending.has(route))return pending.get(route);
-    const asset=manifest.mediaIndex[route];if(!asset)return media[route]?Promise.resolve(media[route]):Promise.reject(new Error('Missing image'));
-    const promise=decryptBytes(asset.file,key,signal).then(data=>{if(current!==generation)throw new Error('Locked');const url=URL.createObjectURL(new Blob([data],{type:asset.mime}));urls.add(url);clearImages[route]=url;return url;}).finally(()=>pending.delete(route));pending.set(route,promise);return promise;
-   };
+   const requestPhoto=window.createPhotoRequests({signal,load:async(id,photoSignal,onProgress)=>{
+    const separator=id.indexOf('|'),quality=id.slice(0,separator),route=id.slice(separator+1);
+    const asset=(quality==='full'?manifest.mediaIndex:manifest.viewIndex||manifest.mediaIndex)[route];
+    if(!asset){if(media[route])return media[route];throw new Error('Missing image');}
+    const data=await decryptBytes(asset.file,key,photoSignal,onProgress,{idle:10000,total:25000,attempts:2});
+    if(current!==generation||photoSignal.aborted)throw new DOMException('Cancelled','AbortError');
+    const url=URL.createObjectURL(new Blob([data],{type:asset.mime}));urls.add(url);return url;
+   }});
+   window.privatePhoto=(route,options={})=>requestPhoto((options.quality==='full'?'full':'view')+'|'+route,options);
    const records=manifest.records.map(m=>({...m,thumbs:m.thumbs.map(u=>media[u])}));if(records.some(m=>m.thumbs.some(u=>!u)))throw new Error('MISSING');
    const app={settings:manifest.settings,hasCover:manifest.hasCover,coverUrl:media['/private-media/home-cover']};
    status('正在打开相册…',current);let html=new TextDecoder().decode(await download('private-app.html?v='+revision,signal));if(current!==generation)return;
