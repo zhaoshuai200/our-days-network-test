@@ -1,0 +1,28 @@
+/* Inspired by the user's cream flowers with pale blue petal edges. */
+body[data-theme="blue-letter"]{--paper:#e5edf3;--ink:#324b63;--muted:#6f8191;--green:#dce6ef;--deep:#516e8b;--line:#bfcedb;--accent:#8caecb;--wash:#f7f4e9;--wash2:#cbddeb;--panel:#fbfcf5;--surface:#edf3f6;--soft:#dce7ee;--gold:#94a4b2}
+body[data-theme="blue-letter"]{background:radial-gradient(ellipse at 12% 12%,#f8f4e7 0,transparent 44%),radial-gradient(ellipse at 92% 65%,#cddfed 0,transparent 53%),var(--paper)}
+body[data-theme="blue-letter"]:before,body[data-theme="blue-letter"]:after,body[data-theme="blue-letter"] .intro-strip:after{background-image:url('assets/blueflowers.webp')}
+body[data-theme="blue-letter"]:before{opacity:.40}body[data-theme="blue-letter"]:after{opacity:.33}
+.palette-option[data-palette="blue-letter"] .palette-swatch{background:linear-gradient(135deg,#fff8e7 35%,#a2c1df 65%);border-color:#a6bdd2}
+body[data-theme="blue-letter"] .hero{background:#334c61;box-shadow:0 13px 36px #304a6818}
+body[data-theme="blue-letter"] .hero:after{background:linear-gradient(90deg,#1c304563,#253d5215 62%,transparent),linear-gradient(0deg,#223a4c51,transparent 40%)}
+body[data-theme="blue-letter"] .hero h1{color:#fff9ed;text-shadow:0 2px 18px #1d354636}
+body[data-theme="blue-letter"] .hero p{color:#edf2f1}
+body[data-theme="blue-letter"] .hero .eyebrow,body[data-theme="blue-letter"] .hero-note,body[data-theme="blue-letter"] .hero-note span,body[data-theme="blue-letter"] .hero-bottom,body[data-theme="blue-letter"] .hero-bottom button{color:#f5f5eb}
+body[data-theme="blue-letter"] .hero .eyebrow:before,body[data-theme="blue-letter"] .hero-bottom .line:before{background:#d6e5ec}
+body[data-theme="blue-letter"] .card-date{background:#37556fb8;color:#fff9ed}
+body[data-theme="blue-letter"] .us-cover{background:#3e5a72}
+body[data-theme="blue-letter"] .us-cover:before{background-image:url('assets/bluehero.webp');opacity:.25}
+body[data-theme="blue-letter"] .us-cover h2,body[data-theme="blue-letter"] .us-cover p,body[data-theme="blue-letter"] .us-cover .flower{color:#f9f6ea}
+body[data-theme="blue-letter"] .map-art{filter:grayscale(.7) sepia(.15) hue-rotate(150deg) saturate(.6)}
+body[data-theme="blue-letter"] .modal::backdrop{background:#243b5085}
+body[data-theme="blue-letter"] .chapter{border-top-color:#93b3cd}
+body[data-theme="blue-letter"] .wish{border-left-color:#99b7cf}
+@media(max-width:560px){
+ .palette-options{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 5px}
+ .palette-option{font-size:10px;gap:5px;padding:7px 10px}
+ .palette-title{display:none}
+ body[data-theme="blue-letter"] .hero-art img{object-position:78% center}
+ body[data-theme="blue-letter"] .hero:after{background:linear-gradient(90deg,#233d536e,#243b4e08),linear-gradient(0deg,#253e576b,transparent 65%)}
+}
+@media(max-width:360px){.palette-option{font-size:9px;padding:6px 8px}.palette-options{gap:4px}}

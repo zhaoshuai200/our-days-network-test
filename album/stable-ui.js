@@ -1,0 +1,13 @@
+(()=>{
+ // One-time migration of the existing browser's cover settings to the portable data folder.
+ if(!window.localApp.settings.cover)saveLocalSettings({cover:coverSettings}).catch(()=>toast('封面设置尚未保存在当前浏览器，请打开封面设置重试'));
+ const edit=document.createElement('dialog');edit.id='annotationEditor';edit.className='modal';edit.innerHTML='<div class="modal-head"><strong>编辑这段回忆</strong><button class="close" type="button" aria-label="关闭标注编辑">×</button></div><form class="modal-body" id="annotationForm"><label class="field">标题<input name="title" maxlength="120" required></label><div class="field-row"><label class="field">日期<input name="date" type="date"></label><label class="field">分类<select name="category"><option>待分类</option><option>日常</option><option>旅行</option><option>纪念</option></select></label></div><label class="field">地点<input name="place" maxlength="120"></label><div id="annotationNotes"></div><p id="annotationStatus" role="status"></p><button class="submit" type="submit">保存在当前浏览器</button></form>';document.body.append(edit);
+ edit.querySelector('.close').onclick=()=>edit.close();const form=edit.querySelector('form');let editingId='';
+ document.addEventListener('click',event=>{if(!event.target.closest('#editAnnotation'))return;const m=activeMemory;editingId=m.id;for(const name of ['title','date','place','category'])form.elements[name].value=m[name]||'';
+ const notes=edit.querySelector('#annotationNotes');notes.replaceChildren();const values=m.sourceBatches?m.sourceBatches.map(b=>({label:`第 ${b.start+1}–${b.start+b.count} 张的备注`,text:b.note})):[{label:'想记住的话',text:m.text}];
+ values.forEach((item,i)=>{const label=document.createElement('label');label.className='field';label.textContent=item.label;const area=document.createElement('textarea');area.name='note'+i;area.maxLength=5000;area.value=item.text;label.append(area);notes.append(label);});edit.querySelector('#annotationStatus').textContent='';edit.showModal();});
+ form.onsubmit=async event=>{event.preventDefault();const submit=form.querySelector('.submit');submit.disabled=true;
+  try{const values=Object.fromEntries(new FormData(form)),notes=[...form.querySelectorAll('textarea')].map(n=>n.value);const result=await appRequest('/api/memories/'+editingId,{method:'PUT',body:{title:values.title,date:values.date,place:values.place,category:values.category,text:notes[0]||'',notes}});const i=memories.findIndex(m=>m.id===editingId);memories[i]=result.memory;window.localMemories=structuredClone(memories);render();edit.close();showDetail(editingId);toast('标注已保存在当前浏览器');}
+  catch(e){edit.querySelector('#annotationStatus').textContent=e.message;}finally{submit.disabled=false;}
+ };
+})();
