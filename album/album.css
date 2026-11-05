@@ -55,4 +55,7 @@ body:has(dialog[open]){overflow:hidden}
 #detail.portrait-album:has(.photo-first){width:min(660px,calc(100% - 32px))}
 #detail .photo-first .thumbs{max-width:740px;margin-left:auto;margin-right:auto}
 #detail .original-link{display:block;width:fit-content;margin-bottom:16px}
+#detail .detail-art{width:100%;height:64dvh;display:grid;place-items:center}
+#detail .detail-art img,#detail .photo-first .detail-art img{width:100%;height:100%;max-height:100%;object-fit:contain}
+#detail.portrait-album:has(.photo-first){width:min(940px,calc(100% - 32px))}
 @media(max-width:680px){#detail:has(.photo-first),#detail.portrait-album:has(.photo-first){width:calc(100% - 20px)}}
