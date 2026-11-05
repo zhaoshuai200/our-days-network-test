@@ -3,6 +3,12 @@ document.querySelector('.preview-note').textContent='加密相册 · 只读体�
 document.querySelector('.appearance-note').textContent='外观选择仅在本次打开期间有效';
 const privateNote=document.createElement('p');privateNote.className='private-session-note';privateNote.textContent='精选和外观调整仅在本次解锁期间有效。';document.querySelector('.footer').append(privateNote);
 
+// The cover preview opens immediately; fetch its full-quality copy afterward.
+if(window.localApp?.hasCover)window.resolvePrivatePhoto('/private-media/home-cover').then(async url=>{
+ const decoded=new Image();decoded.src=url;await decoded.decode();
+ window.localApp.coverUrl=url;const cover=document.querySelector('.hero-art img');if(cover)cover.src=url;
+}).catch(()=>{});
+
 window.loadPrivateDetail=async(photo,memory,index)=>{
  const link=document.querySelector('#detailOriginal');
  photo.src=memory.thumbs[index];link?.removeAttribute('href');

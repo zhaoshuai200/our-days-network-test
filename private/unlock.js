@@ -1,39 +1,80 @@
 (()=>{
- const $=id=>document.getElementById(id),urls=new Set(),aad=new TextEncoder().encode('our-days-private-v1');let generation=0,controller;
+ const $=id=>document.getElementById(id),urls=new Set(),aad=new TextEncoder().encode('our-days-private-v1');
+ let generation=0,controller,retryKey=null;
+ const revision='loading3';
  function bytes(text){return Uint8Array.from(atob(text.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}
- async function decryptBytes(file,key,signal){const response=await fetch('vault/'+file+(file==='manifest.bin'?'?v=clarity2':''),{signal});if(!response.ok)throw new Error('NETWORK');const data=new Uint8Array(await response.arrayBuffer());return crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));}
- async function decrypt(file,key,signal){return JSON.parse(new TextDecoder().decode(await decryptBytes(file,key,signal)));}
- function lock(){++generation;controller?.abort();delete window.privatePhoto;$('viewer').hidden=true;$('viewer').removeAttribute('srcdoc');for(const url of urls)URL.revokeObjectURL(url);urls.clear();$('session').hidden=true;$('entry').hidden=false;$('accessKey').value='';$('progress').hidden=true;$('unlock').disabled=false;$('status').textContent='';}
- $('lock').onclick=lock;window.addEventListener('pagehide',lock);window.addEventListener('pageshow',e=>{if(e.persisted)lock();});
+ function status(text,current){if(current===generation)$('status').textContent=text;}
+ // Bound both idle connections and total transfer time. Locking cancels retries too.
+ async function download(url,signal,report=()=>{}){
+  for(let attempt=0;attempt<3;attempt++){
+   signal.throwIfAborted();const request=new AbortController();let idle,total,timedOut=false;
+   const abort=()=>request.abort(signal.reason),expire=()=>{timedOut=true;request.abort();};
+   const touch=()=>{clearTimeout(idle);idle=setTimeout(expire,15000);};
+   signal.addEventListener('abort',abort,{once:true});total=setTimeout(expire,60000);touch();
+   try{
+    report({attempt,loaded:0,total:0});
+    const response=await fetch(url,{signal:request.signal});if(!response.ok)throw new Error('NETWORK');touch();
+    const size=Number(response.headers.get('content-length'))||0;
+    if(!response.body){const data=new Uint8Array(await response.arrayBuffer());report({attempt,loaded:data.length,total:size});return data;}
+    const reader=response.body.getReader(),parts=[];let loaded=0;
+    while(true){const {done,value}=await reader.read();if(done)break;parts.push(value);loaded+=value.length;touch();report({attempt,loaded,total:size});}
+    const data=new Uint8Array(loaded);let offset=0;for(const part of parts){data.set(part,offset);offset+=part.length;}return data;
+   }catch(error){
+    if(signal.aborted)throw signal.reason;
+    if(attempt===2)throw new Error(timedOut?'TIMEOUT':'NETWORK');
+   }finally{clearTimeout(idle);clearTimeout(total);signal.removeEventListener('abort',abort);request.abort();}
+  }
+ }
+ async function decryptBytes(file,key,signal,report){
+  const data=await download('vault/'+file+(file==='manifest.bin'?'?v='+revision:''),signal,report);
+  signal.throwIfAborted();return crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));
+ }
+ async function decrypt(file,key,signal,report){return JSON.parse(new TextDecoder().decode(await decryptBytes(file,key,signal,report)));}
+ function clearMedia(){delete window.privatePhoto;for(const url of urls)URL.revokeObjectURL(url);urls.clear();}
+ function lock(){++generation;controller?.abort();retryKey=null;clearMedia();$('viewer').hidden=true;$('viewer').removeAttribute('srcdoc');$('session').hidden=true;$('entry').hidden=false;$('accessKey').value='';$('accessKey').required=true;$('progress').hidden=true;$('cancel').hidden=true;$('unlock').disabled=false;$('unlock').textContent='打开相册';$('status').textContent='';}
+ $('lock').onclick=lock;$('cancel').onclick=()=>{lock();$('status').textContent='已取消，可以重新打开相册。';};
+ $('accessKey').addEventListener('input',()=>{retryKey=null;$('accessKey').required=true;$('unlock').textContent='打开相册';});
+ window.addEventListener('pagehide',lock);window.addEventListener('pageshow',e=>{if(e.persisted)lock();});
  $('unlockForm').onsubmit=async event=>{
   event.preventDefault();const current=++generation;controller?.abort();controller=new AbortController();const signal=controller.signal;
-  $('unlock').disabled=true;$('status').textContent='正在解锁…';$('progress').hidden=true;
+  $('unlock').disabled=true;$('cancel').hidden=false;$('progress').hidden=true;
   try{
-   if(!crypto.subtle)throw new Error('UNSUPPORTED');const raw=bytes($('accessKey').value.trim());if(raw.length!==32)throw new Error('KEY');
-   let key=await crypto.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['decrypt']);raw.fill(0);$('accessKey').value='';
-   const manifest=await decrypt('manifest.bin',key,signal);if(manifest.version!==1)throw new Error('VERSION');
+   if(!crypto.subtle)throw new Error('UNSUPPORTED');let key=retryKey;
+   if(!key){let raw;try{raw=bytes($('accessKey').value.trim());}catch{throw new Error('KEY');}if(raw.length!==32)throw new Error('KEY');key=await crypto.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['decrypt']);raw.fill(0);}
+   status('正在下载相册目录…',current);
+   const manifest=await decrypt('manifest.bin',key,signal,p=>status(p.attempt?`目录连接重试 ${p.attempt} / 2…`:'正在下载相册目录…',current));
+   if(current!==generation)return;if(manifest.version!==1)throw new Error('VERSION');
+   // Retain a verified key only in memory for manual network retries.
+   retryKey=key;$('accessKey').value='';$('accessKey').required=false;
    const media={};$('progress').hidden=false;$('progress').max=manifest.chunks.length;
    for(let i=0;i<manifest.chunks.length;i++){
-    if(current!==generation)return;$('status').textContent=`正在解密照片 ${i+1} / ${manifest.chunks.length}…`;
-    const chunk=await decrypt(manifest.chunks[i],key,signal);if(current!==generation)return;
+    const chunk=await decrypt(manifest.chunks[i],key,signal,p=>{
+     const amount=p.total?`${Math.round(p.loaded/1024)} / ${Math.round(p.total/1024)} KB`:`${Math.round(p.loaded/1024)} KB`;
+     status(`正在下载预览 ${i+1} / ${manifest.chunks.length} · ${amount}${p.attempt?' · 重试 '+p.attempt+' / 2':''}`,current);
+     if(current===generation)$('progress').value=i+(p.total?p.loaded/p.total:0);
+    });if(current!==generation)return;
+    status(`正在整理预览 ${i+1} / ${manifest.chunks.length}…`,current);
     for(const [route,item]of Object.entries(chunk)){const url=URL.createObjectURL(new Blob([bytes(item.data)],{type:item.mime}));urls.add(url);media[route]=url;}
     $('progress').value=i+1;
    }
-   const pending=new Map();window.privatePhoto=route=>{
-    if(current!==generation)return Promise.reject(new Error('Locked'));if(media[route])return Promise.resolve(media[route]);if(pending.has(route))return pending.get(route);
-    const asset=manifest.mediaIndex[route];if(!asset)return Promise.reject(new Error('Missing image'));
-    const promise=decryptBytes(asset.file,key,signal).then(data=>{if(current!==generation)throw new Error('Locked');const url=URL.createObjectURL(new Blob([data],{type:asset.mime}));urls.add(url);media[route]=url;return url;}).finally(()=>pending.delete(route));pending.set(route,promise);return promise;
+   const pending=new Map(),clearImages={};window.privatePhoto=route=>{
+    if(current!==generation)return Promise.reject(new Error('Locked'));
+    if(clearImages[route])return Promise.resolve(clearImages[route]);if(pending.has(route))return pending.get(route);
+    const asset=manifest.mediaIndex[route];if(!asset)return media[route]?Promise.resolve(media[route]):Promise.reject(new Error('Missing image'));
+    const promise=decryptBytes(asset.file,key,signal).then(data=>{if(current!==generation)throw new Error('Locked');const url=URL.createObjectURL(new Blob([data],{type:asset.mime}));urls.add(url);clearImages[route]=url;return url;}).finally(()=>pending.delete(route));pending.set(route,promise);return promise;
    };
-   const records=manifest.records.map(m=>({...m,thumbs:m.thumbs.map(u=>media[u])}));
-   if(records.some(m=>m.thumbs.some(u=>!u)))throw new Error('MISSING');
+   const records=manifest.records.map(m=>({...m,thumbs:m.thumbs.map(u=>media[u])}));if(records.some(m=>m.thumbs.some(u=>!u)))throw new Error('MISSING');
    const app={settings:manifest.settings,hasCover:manifest.hasCover,coverUrl:media['/private-media/home-cover']};
-   const response=await fetch('private-app.html?v=clarity2',{signal});if(!response.ok)throw new Error('NETWORK');let html=await response.text();if(current!==generation)return;
+   status('正在打开相册…',current);let html=new TextDecoder().decode(await download('private-app.html?v='+revision,signal));if(current!==generation)return;
    const safe=value=>JSON.stringify(value).replaceAll('<','\\u003c');
    html=html.replace('<head>','<head><base href="'+new URL('./',location.href).href+'">').replace('<!--PRIVATE_STATE-->','<script>window.localMemories='+safe(records)+';window.localApp='+safe(app)+';window.resolvePrivatePhoto=parent.privatePhoto;window.privatePreferences={store:new Map(),getItem(k){return this.store.get(k)||null},setItem(k,v){this.store.set(k,v)}};<\/script>');
-   $('viewer').srcdoc=html;$('viewer').hidden=false;$('session').hidden=false;$('entry').hidden=true;
-  }catch(e){if(current!==generation)return;delete window.privatePhoto;for(const url of urls)URL.revokeObjectURL(url);urls.clear();$('status').textContent=e.message==='UNSUPPORTED'?'当前浏览器不支持安全解密，请用最新版 Safari 或手机浏览器打开。':e.message==='NETWORK'||e.name==='TypeError'?'网络加载未完成，请重新输入密钥再试。':'密钥不正确或加密数据校验失败，请检查后重试。';$('progress').hidden=true;}
-  finally{if(current===generation)$('unlock').disabled=false;}
+   $('viewer').srcdoc=html;$('viewer').hidden=false;$('session').hidden=false;$('entry').hidden=true;retryKey=null;
+  }catch(e){
+   if(current!==generation)return;clearMedia();
+   const network=['NETWORK','TIMEOUT'].includes(e.message);
+   if(!network){retryKey=null;$('accessKey').required=true;}
+   status(e.message==='UNSUPPORTED'?'当前浏览器不支持安全解密，请用最新版 Safari 或手机浏览器打开。':network?'照片下载中断，已自动重试两次。请检查网络，再点“重试打开”。':'密钥不正确或加密数据校验失败，请检查后重试。',current);
+   $('unlock').textContent=network?'重试打开':'打开相册';$('progress').hidden=true;
+  }finally{if(current===generation){$('unlock').disabled=false;$('cancel').hidden=true;}}
  };
 })();
-
-
