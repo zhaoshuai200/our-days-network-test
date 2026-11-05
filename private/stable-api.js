@@ -1,0 +1,2 @@
+async function saveLocalSettings(changes){Object.assign(window.localApp.settings,changes);return {settings:window.localApp.settings};}
+async function appRequest(route,{body}={}){if(route==='/cinema-picks'){const memory=window.localMemories.find(m=>m.id===body.id);if(!memory||body.photos.some(p=>!memory.photos.includes(p)))throw new Error('无效选择');memory.cinemaPicks=body.photos;return {ok:true};}throw new Error('只读相册，请在电脑端修改');}

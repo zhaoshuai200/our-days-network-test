@@ -1,0 +1,84 @@
+:root{--paper:#f3e6c9;--ink:#4d3b20;--muted:#7d6844;--green:#ead7ae;--deep:#82602a;--line:#d7c49c;--accent:#a67d36;--wash:#fff9e8;--wash2:#e7d1a0;--panel:#fffbed;--surface:#faf1dc;--soft:#eddfbc;--gold:#b18d47}
+body[data-theme="jasmine"]{--paper:#f4f1df;--ink:#444432;--muted:#72705a;--green:#ebe8ce;--deep:#737047;--line:#d4d0b3;--accent:#97915b;--wash:#fffdf2;--wash2:#e8e3be;--panel:#fffef6;--surface:#f9f7e8;--soft:#ece8ce;--gold:#aaa06b}
+body[data-theme="rose"]{--paper:#e8edf5;--ink:#263c5c;--muted:#5c6e87;--green:#dbe4f1;--deep:#304c75;--line:#c0cee1;--accent:#6987b0;--wash:#fbf8ed;--wash2:#cedcf0;--panel:#fcfcf7;--surface:#f0f4f9;--soft:#dce5f1;--gold:#a79a75}
+body{background:radial-gradient(ellipse at 8% 13%,var(--wash) 0,transparent 42%),radial-gradient(ellipse at 94% 70%,var(--wash2) 0,transparent 48%),var(--paper);color:var(--ink);isolation:isolate;transition:background-color .3s,color .3s}
+body:before,body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:url('assets/flowers.webp');background-size:460px auto;background-repeat:no-repeat;opacity:.31}
+body:before{background-position:-90px 180px}body:after{transform:scaleX(-1);background-position:-100px 70px;opacity:.26}
+.notice{background:var(--deep);color:#fff3e8}
+.header{height:100px}.brand-mark{width:42px;height:43px}.brand-mark img{width:100%;height:100%;object-fit:contain}.brand strong{color:var(--ink)}.brand small{color:var(--muted)}
+.nav button{color:var(--muted)}.nav button.active{color:var(--ink)}.nav button.active:after{background:var(--deep)}
+.add-button{background:var(--deep);border-color:var(--deep);color:#fff5e8;border-radius:5px;gap:9px}.add-button:hover{background:var(--accent)}.peach-mini{width:21px;height:21px;object-fit:contain;display:inline-block;vertical-align:middle;filter:drop-shadow(0 1px 1px #27140c16);transition:transform .25s}.add-button:hover .peach-mini{transform:rotate(-13deg)}
+.palette-bar{display:flex;align-items:center;justify-content:flex-end;gap:16px;margin:0 0 20px;padding:0 1px;color:var(--muted);font-size:10px;letter-spacing:.6px}.palette-title{margin-right:4px}.palette-options{display:flex;gap:8px}.palette-option{display:flex;gap:7px;align-items:center;border:1px solid transparent;background:transparent;border-radius:25px;padding:8px 11px;font-size:10px;color:var(--muted);transition:background .2s,border-color .2s}.palette-option[aria-pressed="true"]{background:var(--panel);border-color:var(--line);color:var(--ink);box-shadow:0 2px 5px #63352105}.palette-swatch{width:11px;height:11px;border-radius:50%;display:inline-block;border:1px solid #6a453326}.palette-option[data-palette="peach"] .palette-swatch{background:#c99278}.palette-option[data-palette="jasmine"] .palette-swatch{background:#baa06a}.palette-option[data-palette="rose"] .palette-swatch{background:#ba8b9f}
+.hero{background:#563b2f;border-radius:5px;min-height:545px;box-shadow:0 12px 35px #6d3f2a12}.hero-art img{object-position:50% 55%}.hero:after{background:linear-gradient(90deg,rgba(40,23,17,.51),rgba(49,28,21,.08) 59%,transparent),linear-gradient(0deg,rgba(46,26,16,.36),transparent 37%)}.hero-copy{color:#fff4e3}.hero .eyebrow{color:#f8e2cc}.hero .eyebrow:before{background:#eecdb1}.hero h1{color:#fff5e7;text-shadow:0 3px 18px #37221136}.hero p{color:#f3ddc9}.hero-note,.hero-note span{color:#fbe9d6}.hero-bottom,.hero-bottom button{color:#ffedda}.hero-bottom .line{background:#edd4b46b}.hero-bottom .line:before{background:#fff0d9}
+.intro-strip{border-color:var(--line);position:relative;padding:27px 0;overflow:hidden}.intro-strip p,.little-stats{color:var(--muted)}.intro-strip strong,.little-stats b{color:var(--ink)}.intro-strip:after{content:"";position:absolute;width:170px;height:110px;background:url('assets/flowers.webp') left center/170px auto no-repeat;left:40%;top:0;opacity:.45;pointer-events:none;z-index:-1}
+.section-title{position:relative}.section-title h2{color:var(--ink)}.section-title p,.section-title .side-note{color:var(--muted)}.filters{border-color:var(--line)}.chip{color:var(--muted)}.chip.active{color:var(--deep)}.chip.active:after{background:var(--deep)}.year-label{color:var(--deep)}.year-label small{color:var(--muted)}.year-label:after{background:var(--line)}
+.card{background:transparent}.card-art{background:var(--soft);border-radius:4px;box-shadow:0 5px 16px #673d2410}.card-date{background:#503327ba;color:#fff1df}.card-art:after{background:var(--panel);color:var(--deep);border-color:var(--line);border-radius:3px}.card-title{color:var(--ink)}.card-desc,.card-foot{color:var(--muted)}.card-foot{border-color:var(--line)}.tag{color:var(--deep)}
+.footer{border-color:var(--line);color:var(--muted)}.footer .leaf{color:var(--deep)}.footer small,.demo-controls button{color:var(--muted)}.footer-peach{width:37px;height:37px;margin:0 auto 12px;object-fit:contain;transform:rotate(-7deg)}
+.eyebrow,.page-heading p{color:var(--muted)}.page-heading h1{color:var(--ink)}
+.map-board{border-color:var(--line);background:linear-gradient(135deg,var(--panel),var(--soft));border-radius:4px}.map-art{opacity:.6;filter:sepia(.8) hue-rotate(325deg) saturate(.5)}.map-note{color:var(--muted)}.place-pin{background:var(--panel);color:var(--deep);border-color:var(--line);border-radius:4px;box-shadow:0 3px 10px #6033210a}.place-pin:before{background:var(--accent)}.place-pin.active{background:var(--deep);border-color:var(--deep);color:#fff0df}.place-pin.active:before{background:#f6d6b6}
+.wish{background:var(--surface);border-left-color:var(--accent);border-radius:3px}.wish span{color:var(--accent)}.wish h3{color:var(--ink)}.wish p{color:var(--muted)}
+.us-cover{background:#684639;color:#fff1df;border-radius:4px}.us-cover:before{background-image:url('assets/floralhero.webp');background-position:center;opacity:.28}.us-cover .flower{color:#f3d4be}.us-cover h2{color:#fff1e1}.us-cover p{color:#ecd5bf}.anniversary{border-color:var(--line);background:var(--surface);border-radius:3px}.anniversary h3{color:var(--deep)}.anniversary strong{color:var(--ink)}.anniversary p{color:var(--muted)}.chapter{border-top-color:var(--accent)}.chapter span{color:var(--accent)}.chapter h3{color:var(--ink)}.chapter p,.privacy-note{color:var(--muted)}
+.modal{border-color:var(--line);background:var(--surface);color:var(--ink);border-radius:8px}.modal-head{background:var(--soft);border-color:var(--line)}.close{background:var(--panel);color:var(--deep)}.modal::backdrop{background:#39231d85;backdrop-filter:blur(7px)}.detail-art{background:var(--soft);border-radius:4px}.detail-meta{color:var(--muted)}.detail-title{color:var(--ink)}.detail-text{color:var(--ink)}.sample-hint{background:var(--soft);color:var(--deep);border-radius:3px}.submit{background:var(--deep);border-radius:4px}.field{color:var(--ink)}.field input,.field textarea,.field select{border-color:var(--line);background:var(--panel);color:var(--ink);border-radius:4px}.upload-box{background:var(--panel);border-color:var(--accent);color:var(--deep);border-radius:5px}.upload-box small{color:var(--muted)}.toast{background:var(--deep);color:#fff1df}
+.peach-nav{height:22px;width:22px;margin:-1px auto 0;object-fit:contain}.nav button.active .peach-nav{transform:rotate(-10deg)}
+body[data-theme="white-lisianthus"]{--paper:#f1f0e5;--ink:#394331;--muted:#72795e;--green:#e3e9cf;--deep:#62794b;--line:#cbd2b8;--accent:#849a61;--wash:#faf9f0;--wash2:#e0e6cb;--panel:#fffff5;--surface:#f5f6e9;--soft:#e6ebd6;--gold:#8d9566}
+body[data-theme="white-lisianthus"]:before,body[data-theme="white-lisianthus"]:after,body[data-theme="white-lisianthus"] .intro-strip:after{background-image:url('assets/whiteflowers.webp')}
+body[data-theme="white-lisianthus"]:before{opacity:.43}body[data-theme="white-lisianthus"]:after{opacity:.36}
+.palette-option[data-palette="white-lisianthus"] .palette-swatch{background:linear-gradient(135deg,#fffff6 50%,#7e9960 50%);border-color:#b7c6a1}
+body[data-theme="white-lisianthus"] .hero{background:#4d5039;box-shadow:0 12px 35px #39452d13}
+body[data-theme="white-lisianthus"] .hero:after{background:linear-gradient(90deg,#252c1c85,#30332210 59%,transparent),linear-gradient(0deg,#30331e4d,transparent 37%)}
+body[data-theme="white-lisianthus"] .hero h1{color:#fffef1}body[data-theme="white-lisianthus"] .hero p{color:#f0f0da}
+body[data-theme="white-lisianthus"] .hero .eyebrow,body[data-theme="white-lisianthus"] .hero-note,body[data-theme="white-lisianthus"] .hero-note span,body[data-theme="white-lisianthus"] .hero-bottom,body[data-theme="white-lisianthus"] .hero-bottom button{color:#f7f7e9}
+body[data-theme="white-lisianthus"] .us-cover{background:#4c5b3e}body[data-theme="white-lisianthus"] .us-cover:before{background-image:url('assets/whitehero.webp')}
+body[data-theme="white-lisianthus"] .us-cover h2,body[data-theme="white-lisianthus"] .us-cover p,body[data-theme="white-lisianthus"] .us-cover .flower{color:#f6f7e8}
+body[data-theme="white-lisianthus"] .map-art{filter:none}body[data-theme="white-lisianthus"] .card-date{background:#455234b8;color:#fffef0}
+body[data-theme="white-lisianthus"] .modal::backdrop{background:#303a2785}
+@media(min-width:1500px){.hero{min-height:590px}}
+@media(max-width:900px){.hero{min-height:500px}.palette-bar{margin-bottom:18px}}
+@media(max-width:560px){
+ body:before{background-size:320px auto;background-position:-86px 410px;opacity:.3}body:after{background-size:310px auto;background-position:-100px 80px;opacity:.22}
+ .header{height:80px}.brand-mark{height:34px;width:33px}.brand{gap:7px}.brand strong{font-size:18px}.brand small{font-size:6px;letter-spacing:1.6px}.add-button{font-size:10px;padding:9px 10px;gap:6px}.peach-mini{height:17px;width:17px}
+ .palette-bar{justify-content:space-between;gap:4px;font-size:9px;margin:0 -3px 14px}.palette-title{font-size:9px;letter-spacing:0;margin-right:0}.palette-options{gap:3px}.palette-option{padding:7px 8px;font-size:9px;gap:5px;letter-spacing:0}.palette-swatch{height:9px;width:9px}
+ .hero{min-height:470px;border-radius:0;margin:0 -22px}.hero-art img{object-position:85% center}.hero:after{background:linear-gradient(90deg,#39231975,#38201915),linear-gradient(0deg,#321d1894,transparent 65%)}.hero-copy{padding-left:27px;padding-right:24px;margin-top:0}.hero h1{font-size:34px;line-height:1.6;margin-top:23px;margin-bottom:21px}.hero-bottom{left:27px;bottom:23px}.hero-note{right:20px;bottom:28px}
+ .intro-strip{padding:24px 0;gap:16px}.intro-strip:after{left:62%;top:-4px;width:140px;height:115px;background-size:170px;opacity:.45}
+ .nav{background:var(--surface);border-color:var(--line)}.nav button{color:var(--muted)}.nav button.active{color:var(--deep)}.nav-icon{height:22px}.map-board{border-radius:4px}.footer-peach{width:32px;height:32px}
+}
+@media(max-width:360px){.palette-title{display:none}.palette-bar{justify-content:center}.palette-options{gap:4px}.palette-option{font-size:10px}.brand strong{font-size:16px}.brand-mark{width:29px;height:31px}.add-button{font-size:9px;padding:9px 8px}.hero h1{font-size:29px}}
+@media(max-width:560px){.palette-bar{flex-direction:column;align-items:stretch;gap:7px;margin:0 0 14px}.palette-title{font-size:9px;text-align:center}.palette-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}.palette-option{justify-content:center;padding:7px 3px;font-size:9px;gap:4px}.palette-swatch{flex-shrink:0;width:8px;height:8px}body[data-theme="white-lisianthus"] .hero:after{background:linear-gradient(90deg,#2e332269,#30332208),linear-gradient(0deg,#2d342472,transparent 65%)}}
+@media(max-width:360px){.palette-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px}.palette-option{font-size:10px;padding:6px}.palette-title{display:none}}
+
+/* Reworked first three palettes: warm amber, ivory champagne and moonlit indigo.
+   Historical query keys remain valid so saved preview links still work. */
+.palette-option[data-palette="peach"] .palette-swatch{background:linear-gradient(135deg,#fff6d7 40%,#bb914c 65%);border-color:#c6ae7d}
+.palette-option[data-palette="jasmine"] .palette-swatch{background:linear-gradient(135deg,#fffef3 40%,#b5af78 65%);border-color:#c8c49f}
+.palette-option[data-palette="rose"] .palette-swatch{background:linear-gradient(135deg,#f8f5e6 40%,#44638d 65%);border-color:#a2b5cf}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]){--theme-flower:url('assets/whiteflowers.webp');--theme-cover:url('assets/whitehero.webp')}
+body[data-theme="rose"]{--theme-flower:url('assets/blueflowers.webp');--theme-cover:url('assets/bluehero.webp')}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]):before,
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]):after,
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .intro-strip:after{background-image:var(--theme-flower)}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]):before{opacity:.32}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]):after{opacity:.26}
+body[data-theme="peach"]:before,body[data-theme="peach"]:after,body[data-theme="peach"] .intro-strip:after{filter:sepia(.5) saturate(.85)}
+
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .hero{background:var(--deep);box-shadow:0 12px 35px #26364b12}
+body[data-theme="peach"] .hero-art img{filter:sepia(.28) saturate(.85);object-position:center 60%}
+body[data-theme="peach"] .hero:after{background:linear-gradient(90deg,#3028148c,#44381c12 65%,transparent),linear-gradient(0deg,#3d2c185c,transparent 43%)}
+body[data-theme="jasmine"] .hero:after{background:linear-gradient(90deg,#2c30258f,#3a3e2310 65%,transparent),linear-gradient(0deg,#30342354,transparent 43%)}
+body[data-theme="rose"] .hero:after{background:linear-gradient(90deg,#172c4f9c,#253a5726 65%,transparent),linear-gradient(0deg,#1d30556b,transparent 43%)}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .hero h1{color:#fffdf0}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .hero :is(p,.eyebrow,.hero-note,.hero-note span,.hero-bottom,.hero-bottom button){color:#f5f5e9}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .hero .eyebrow:before,
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .hero-bottom .line:before{background:#f6f3d9}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .us-cover{background:var(--deep)}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .us-cover:before{background-image:var(--theme-cover);opacity:.28}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .us-cover :is(h2,p,.flower){color:#fffced}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .map-art{filter:sepia(.3) saturate(.55)}
+body[data-theme="rose"] .map-art{filter:grayscale(.7) sepia(.15) hue-rotate(155deg) saturate(.65)}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .card-date{background:var(--deep);color:#fffdef}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .place-pin.active:before{background:#f4f1d9}
+body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .modal::backdrop{background:#26334685}
+@media(max-width:560px){
+ body[data-theme="peach"] .hero-art img{object-position:85% center}
+ body[data-theme="rose"] .hero-art img{object-position:78% center}
+ body:is([data-theme="peach"],[data-theme="jasmine"],[data-theme="rose"]) .hero:after{background:linear-gradient(90deg,#242c3482,#2b364415),linear-gradient(0deg,#28334380,transparent 65%)}
+}
