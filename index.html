@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>相册 · 手机访问测试</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;color:#293d4c;background:#f4f4ee}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top right,#dceaf5,transparent 65%);min-height:100vh}main{max-width:760px;margin:auto;padding:36px 22px 60px}.eyebrow{font-size:11px;letter-spacing:3px;color:#657f93}h1{font-family:Georgia,"Songti SC",serif;font-size:clamp(30px,7vw,44px);font-weight:500;margin:16px 0}p{line-height:1.8;color:#536878}.pill{display:inline-block;padding:8px 14px;border:1px solid #c8d9df;border-radius:24px;font-size:13px;background:#ffffff80}.stage{margin:25px 0 12px;position:relative;background:#e6edf0;border-radius:18px;overflow:hidden;aspect-ratio:4/3}.stage img{width:100%;height:100%;object-fit:contain}.status{font-size:13px;min-height:24px}.controls{display:flex;align-items:center;gap:12px;justify-content:center;margin:16px 0 28px}button{border:1px solid #b6cddc;background:#fcfdfb;color:#304d65;border-radius:30px;padding:12px 20px;font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #537eaa;outline-offset:4px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid button{padding:0;border-radius:12px;overflow:hidden;aspect-ratio:4/3}.grid img{width:100%;height:100%;object-fit:cover}.result{margin-top:24px;padding:18px;background:#ffffff90;border-radius:14px;line-height:1.8;font-size:14px}textarea{width:100%;min-height:180px;background:#fff;border:1px solid #c8d9df;border-radius:12px;padding:12px;font:inherit;font-size:13px;margin-top:12px}footer{margin-top:28px;font-size:12px;color:#687a87;line-height:1.8}a{color:#335f88}.orbit{display:inline-block;animation:turn 8s linear infinite;margin-right:8px}@keyframes turn{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.orbit{animation:none}}
+</style></head><body><main>
+<div class="eyebrow">OUR DAYS · CONNECTION TEST</div><h1>先看看，能否顺畅相遇。</h1>
+<p>这是公开的网络测试页，仅有示例插画。<br>不含私人照片、真实回忆或登录功能。</p>
+<span class="pill">✓ 页面已打开</span> <span class="pill" id="scriptStatus">脚本等待启动</span>
+<div class="stage"><img id="hero" alt="示例风景，等待加载"></div>
+<div class="status" id="imageStatus" role="status" aria-live="polite">准备加载 3 张示例图片…</div>
+<div class="controls"><button id="prev" aria-label="上一张">←</button><button id="play">开始轮播</button><button id="next" aria-label="下一张">→</button><span id="page">1 / 3</span></div>
+<div class="grid" id="thumbs"></div>
+<div class="result"><strong><span class="orbit" aria-hidden="true">✧</span>请用手机完成这三步</strong><br>① 关闭代理，用手机流量打开此链接。<br>② 看图片是否出现，点“开始轮播”观察切换。<br>③ 再从微信打开一次，告诉我哪一种能用。<p id="summary">加载测试进行中…</p><button id="copy">复制测试结果</button><textarea id="report" aria-label="可复制的测试结果" readonly hidden></textarea><p id="copyStatus" role="status"></p><a href="?fresh=1" id="retry">重新加载测试图片</a></div>
+<footer>图片均为非私人示例插画。加载结果仅在本页计算，不主动上传，也不读取你的照片或位置。GitHub 托管服务可能保留常规访问日志。计时包含网络传输和图片解码，不代表纯网速测试。此页通过不代表正式相册的隐私与上传功能已完成。</footer>
+<noscript><p>浏览器未运行 JavaScript，自动检测与轮播不可用。</p></noscript>
+<script src="app.js"></script></main></body></html>
