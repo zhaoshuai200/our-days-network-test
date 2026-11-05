@@ -1,7 +1,7 @@
 (()=>{
  const $=id=>document.getElementById(id),urls=new Set(),aad=new TextEncoder().encode('our-days-private-v1');let generation=0,controller;
  function bytes(text){return Uint8Array.from(atob(text.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}
- async function decryptBytes(file,key,signal){const response=await fetch('vault/'+file,{signal});if(!response.ok)throw new Error('NETWORK');const data=new Uint8Array(await response.arrayBuffer());return crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));}
+ async function decryptBytes(file,key,signal){const response=await fetch('vault/'+file+(file==='manifest.bin'?'?v=clarity2':''),{signal});if(!response.ok)throw new Error('NETWORK');const data=new Uint8Array(await response.arrayBuffer());return crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));}
  async function decrypt(file,key,signal){return JSON.parse(new TextDecoder().decode(await decryptBytes(file,key,signal)));}
  function lock(){++generation;controller?.abort();delete window.privatePhoto;$('viewer').hidden=true;$('viewer').removeAttribute('srcdoc');for(const url of urls)URL.revokeObjectURL(url);urls.clear();$('session').hidden=true;$('entry').hidden=false;$('accessKey').value='';$('progress').hidden=true;$('unlock').disabled=false;$('status').textContent='';}
  $('lock').onclick=lock;window.addEventListener('pagehide',lock);window.addEventListener('pageshow',e=>{if(e.persisted)lock();});
@@ -27,7 +27,7 @@
    const records=manifest.records.map(m=>({...m,thumbs:m.thumbs.map(u=>media[u])}));
    if(records.some(m=>m.thumbs.some(u=>!u)))throw new Error('MISSING');
    const app={settings:manifest.settings,hasCover:manifest.hasCover,coverUrl:media['/private-media/home-cover']};
-   const response=await fetch('private-app.html',{signal});if(!response.ok)throw new Error('NETWORK');let html=await response.text();if(current!==generation)return;
+   const response=await fetch('private-app.html?v=clarity2',{signal});if(!response.ok)throw new Error('NETWORK');let html=await response.text();if(current!==generation)return;
    const safe=value=>JSON.stringify(value).replaceAll('<','\\u003c');
    html=html.replace('<head>','<head><base href="'+new URL('./',location.href).href+'">').replace('<!--PRIVATE_STATE-->','<script>window.localMemories='+safe(records)+';window.localApp='+safe(app)+';window.resolvePrivatePhoto=parent.privatePhoto;window.privatePreferences={store:new Map(),getItem(k){return this.store.get(k)||null},setItem(k,v){this.store.set(k,v)}};<\/script>');
    $('viewer').srcdoc=html;$('viewer').hidden=false;$('session').hidden=false;$('entry').hidden=true;
@@ -35,4 +35,5 @@
   finally{if(current===generation)$('unlock').disabled=false;}
  };
 })();
+
 
