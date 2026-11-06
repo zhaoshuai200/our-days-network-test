@@ -1,7 +1,7 @@
 (()=>{
  const $=id=>document.getElementById(id),urls=new Set(),aad=new TextEncoder().encode('our-days-private-v1');
  let generation=0,controller,retryKey=null;
- const revision='view4';
+ const revision='mobile5';
  function bytes(text){return Uint8Array.from(atob(text.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}
  function status(text,current){if(current===generation)$('status').textContent=text;}
  // Bound both idle connections and total transfer time. Locking cancels retries too.
@@ -26,7 +26,7 @@
   }
  }
  async function decryptBytes(file,key,signal,report,limits){
-  const data=await download('vault/'+file+(file==='manifest.bin'?'?v='+revision:''),signal,report,limits);
+  const data=await download('vault/'+file+(file==='mobile.bin'?'?t='+Date.now():file==='manifest.bin'?'?v='+revision:''),signal,report,limits);
   signal.throwIfAborted();report?.({phase:'decrypt'});return crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));
  }
  async function decrypt(file,key,signal,report){return JSON.parse(new TextDecoder().decode(await decryptBytes(file,key,signal,report)));}
@@ -46,6 +46,11 @@
    if(current!==generation)return;if(manifest.version!==1)throw new Error('VERSION');
    // Retain a verified key only in memory for manual network retries.
    retryKey=key;$('accessKey').value='';$('accessKey').required=false;
+   status('正在同步手机发布的回忆…',current);
+   const updates=await decrypt('mobile.bin',key,signal);if(current!==generation)return;
+   if(updates.kind!=='mobile-album-v1')throw new Error('VERSION');
+   manifest.records.push(...updates.records);manifest.chunks.push(...updates.chunks);Object.assign(manifest.mediaIndex,updates.mediaIndex);Object.assign(manifest.viewIndex,updates.viewIndex);
+   if(updates.music)manifest.mediaIndex['/mobile/music']=updates.music;
    const media={};$('progress').hidden=false;$('progress').max=manifest.chunks.length;
    for(let i=0;i<manifest.chunks.length;i++){
     const chunk=await decrypt(manifest.chunks[i],key,signal,p=>{
@@ -61,16 +66,16 @@
     const separator=id.indexOf('|'),quality=id.slice(0,separator),route=id.slice(separator+1);
     const asset=(quality==='full'?manifest.mediaIndex:manifest.viewIndex||manifest.mediaIndex)[route];
     if(!asset){if(media[route])return media[route];throw new Error('Missing image');}
-    const data=await decryptBytes(asset.file,key,photoSignal,onProgress,{idle:10000,total:25000,attempts:2});
+    const data=await decryptBytes(asset.file,key,photoSignal,onProgress,route==='/mobile/music'?{idle:15000,total:90000,attempts:2}:{idle:10000,total:25000,attempts:2});
     if(current!==generation||photoSignal.aborted)throw new DOMException('Cancelled','AbortError');
     const url=URL.createObjectURL(new Blob([data],{type:asset.mime}));urls.add(url);return url;
    }});
    window.privatePhoto=(route,options={})=>requestPhoto((options.quality==='full'?'full':'view')+'|'+route,options);
    const records=manifest.records.map(m=>({...m,thumbs:m.thumbs.map(u=>media[u])}));if(records.some(m=>m.thumbs.some(u=>!u)))throw new Error('MISSING');
-   const app={settings:manifest.settings,hasCover:manifest.hasCover,coverUrl:media['/private-media/home-cover']};
+   const app={music:updates.music||null,settings:manifest.settings,hasCover:manifest.hasCover,coverUrl:media['/private-media/home-cover']};
    status('正在打开相册…',current);let html=new TextDecoder().decode(await download('private-app.html?v='+revision,signal));if(current!==generation)return;
    const safe=value=>JSON.stringify(value).replaceAll('<','\\u003c');
-   html=html.replace('<head>','<head><base href="'+new URL('./',location.href).href+'">').replace('<!--PRIVATE_STATE-->','<script>window.localMemories='+safe(records)+';window.localApp='+safe(app)+';window.resolvePrivatePhoto=parent.privatePhoto;window.privatePreferences={store:new Map(),getItem(k){return this.store.get(k)||null},setItem(k,v){this.store.set(k,v)}};<\/script>');
+   html=html.replace('<head>','<head><base href="'+new URL('./',location.href).href+'">').replace('<!--PRIVATE_STATE-->',()=>'<script>window.localMemories='+safe(records)+';window.localApp='+safe(app)+';window.resolvePrivatePhoto=parent.privatePhoto;window.privatePreferences={store:new Map(),getItem(k){return this.store.get(k)||null},setItem(k,v){this.store.set(k,v)}};<\/script>');
    $('viewer').srcdoc=html;$('viewer').hidden=false;$('session').hidden=false;$('entry').hidden=true;retryKey=null;
   }catch(e){
    if(current!==generation)return;clearMedia();

@@ -1,5 +1,5 @@
 document.title='把日子收藏 · 我们的相册';
-document.querySelector('.preview-note').textContent='加密相册 · 只读体验 · 原始文件保留在电脑备份中';
+document.querySelector('.preview-note').textContent='加密相册 · 只读体验 · 请保留原始文件备份';
 document.querySelector('.appearance-note').textContent='外观选择仅在本次打开期间有效';
 const privateNote=document.createElement('p');privateNote.className='private-session-note';privateNote.textContent='精选和外观调整仅在本次解锁期间有效。';document.querySelector('.footer').append(privateNote);
 
@@ -46,3 +46,6 @@ window.loadPrivateDetail=async(photo,memory,index,quality='view')=>{
  function scan(){document.querySelectorAll('.card-art img').forEach(img=>{if(!observed.has(img)){observed.add(img);observer.observe(img);}});}
  for(const id of ['timeline','placeCards'])new MutationObserver(scan).observe(document.getElementById(id),{childList:true,subtree:true});scan();
 })();
+
+const manageLink=document.createElement('a');manageLink.href='manage.html';manageLink.target='_top';manageLink.textContent='手机维护 · 添加照片或换歌';document.querySelector('.footer').append(manageLink);
+document.querySelector('#reset').onclick=()=>parent.location.reload();
