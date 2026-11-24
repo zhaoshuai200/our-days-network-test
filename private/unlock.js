@@ -1,7 +1,7 @@
 (()=>{
  const $=id=>document.getElementById(id),urls=new Set(),aad=new TextEncoder().encode('our-days-private-v1');
  let generation=0,controller,retryKey=null;
- const revision='mobile5';
+ const revision='smooth6';
  function bytes(text){return Uint8Array.from(atob(text.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}
  function status(text,current){if(current===generation)$('status').textContent=text;}
  // Bound both idle connections and total transfer time. Locking cancels retries too.
@@ -26,8 +26,12 @@
   }
  }
  async function decryptBytes(file,key,signal,report,limits){
+  const cached=await window.cipherCache?.read(file);signal.throwIfAborted();
+  const decode=data=>crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));
+  if(cached){try{return await decode(cached);}catch{await window.cipherCache.remove(file);}}
   const data=await download('vault/'+file+(file==='mobile.bin'?'?t='+Date.now():file==='manifest.bin'?'?v='+revision:''),signal,report,limits);
-  signal.throwIfAborted();report?.({phase:'decrypt'});return crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12),additionalData:aad},key,data.slice(12));
+  signal.throwIfAborted();report?.({phase:'decrypt'});const decoded=await decode(data);
+  window.cipherCache?.put(file,data);return decoded;
  }
  async function decrypt(file,key,signal,report){return JSON.parse(new TextDecoder().decode(await decryptBytes(file,key,signal,report)));}
  function clearMedia(){delete window.privatePhoto;for(const url of urls)URL.revokeObjectURL(url);urls.clear();}
