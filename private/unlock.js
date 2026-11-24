@@ -1,7 +1,7 @@
 (()=>{
  const $=id=>document.getElementById(id),urls=new Set(),aad=new TextEncoder().encode('our-days-private-v1');
  let generation=0,controller,retryKey=null;
- const revision='smooth6';
+ const revision='ready7';
  function bytes(text){return Uint8Array.from(atob(text.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}
  function status(text,current){if(current===generation)$('status').textContent=text;}
  // Bound both idle connections and total transfer time. Locking cancels retries too.

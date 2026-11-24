@@ -9,19 +9,6 @@ if(window.localApp?.hasCover)window.resolvePrivatePhoto('/private-media/home-cov
  window.localApp.coverUrl=url;const cover=document.querySelector('.hero-art img');if(cover)cover.src=url;
 }).catch(()=>{});
 
-const readyViews=new Map();
-async function prepareView(route,options={}){
- if(readyViews.has(route))return readyViews.get(route);
- const url=await window.resolvePrivatePhoto(route,options),decoded=new Image();decoded.src=url;await decoded.decode();
- readyViews.set(route,url);return url;
-}
-let neighborController;
-function warmNeighbors(memory,index){
- neighborController?.abort();neighborController=new AbortController();
- if(navigator.connection?.saveData)return;
- const signal=neighborController.signal;
- for(const offset of [1,-1,2,-2]){const route=memory.photos[index+offset];if(route&&!readyViews.has(route))prepareView(route,{signal}).catch(()=>{});}
-}
 let privateDetailController;
 document.querySelector('#detail').addEventListener('close',()=>{privateDetailController?.abort();neighborController?.abort();});
 window.loadPrivateDetail=async(photo,memory,index,quality='view')=>{
@@ -29,7 +16,7 @@ window.loadPrivateDetail=async(photo,memory,index,quality='view')=>{
  const link=document.querySelector('#detailOriginal');
  const current=()=>!controller.signal.aborted&&activeMemory===memory&&activePhoto===index&&photo.isConnected&&document.querySelector('#detail').open;
  const ready=quality==='view'&&readyViews.get(memory.photos[index]);
- if(quality==='view')photo.src=ready||memory.thumbs[index];link?.removeAttribute('href');
+ if(quality==='view'&&ready)photo.src=ready;link?.removeAttribute('href');
  const label=quality==='full'?'高清大图':'清晰照片';
  if(link){link.textContent='正在加载'+label+'…';link.onclick=event=>event.preventDefault();}
  try{
@@ -41,7 +28,7 @@ window.loadPrivateDetail=async(photo,memory,index,quality='view')=>{
    link.textContent='正在下载'+label+' · '+amount+(p.attempt?' · 重试中':'');
   }});const decoded=new Image();decoded.src=url;await decoded.decode();if(!current())return;
   if(photo.src!==url)photo.src=url;
-  warmNeighbors(memory,index);
+
   if(link){
    if(quality==='full'){link.href=url;link.textContent='查看高清照片 ↗';link.onclick=null;}
    else{link.href='#';link.textContent='加载高清大图（3200px）';link.onclick=event=>{event.preventDefault();window.loadPrivateDetail(photo,memory,index,'full');};}
@@ -53,10 +40,12 @@ window.loadPrivateDetail=async(photo,memory,index,quality='view')=>{
 };
 // Only visible album cards request clear images; small thumbnail strips stay small.
 (()=>{
- const observed=new WeakSet(),queue=[];let running=0;
- function pump(){while(running<1&&queue.length){const {img,route}=queue.shift();if(!img.isConnected)continue;running++;
-  prepareView(route).then(url=>{if(img.isConnected)img.src=url;}).catch(()=>{}).finally(()=>{running--;pump();});
+ const observed=new WeakSet(),queue=[];let running=0,cardController;
+ function pump(){while(running<1&&queue.length&&!window.privateReading()){const {img,route}=queue.shift();if(!img.isConnected)continue;running++;cardController=new AbortController();const controller=cardController;
+  prepareView(route,{signal:controller.signal}).then(url=>{if(img.isConnected)img.src=url;}).catch(()=>{if(controller.signal.aborted)queue.unshift({img,route});}).finally(()=>{running--;pump();});
  }}
+ document.addEventListener('private-gallery-busy',()=>cardController?.abort());
+ document.addEventListener('private-gallery-idle',()=>queueMicrotask(pump));
  const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;observer.unobserve(entry.target);const img=entry.target,memory=window.localMemories.find(m=>String(m.id)===img.closest('[data-id]')?.dataset.id);if(memory)queue.push({img,route:memory.photos[memory.cover||0]});}pump();},{rootMargin:navigator.connection?.saveData?'100px':'600px'});
  function scan(){document.querySelectorAll('.card-art img').forEach(img=>{if(!observed.has(img)){observed.add(img);observer.observe(img);}});}
  for(const id of ['timeline','placeCards'])new MutationObserver(scan).observe(document.getElementById(id),{childList:true,subtree:true});scan();
@@ -67,6 +56,6 @@ document.querySelector('#reset').onclick=()=>parent.location.reload();
 
 // Warm the selected cover as soon as the visitor expresses interest.
 for(const type of ['pointerover','focusin','touchstart'])document.addEventListener(type,event=>{
- const card=event.target.closest?.('.card[data-id]');if(!card)return;
+ const card=event.target.closest?.('.card[data-id]');if(!card||window.privateReading())return;
  const m=window.localMemories.find(m=>String(m.id)===card.dataset.id);if(m)prepareView(m.photos[m.cover||0],{priority:1}).catch(()=>{});
 },{passive:true});
